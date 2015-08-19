@@ -1,0 +1,9 @@
+# Copy as is, removing the dependencies you do not need.
+source 'https://github.com/CocoaPods/Specs.git'
+pod 'IMFGoogleAuthentication'
+pod 'IMFFacebookAuthentication'
+pod 'IMFPush'
+pod 'CloudantToolkit'
+pod 'IMFURLProtocol'
+pod 'IMFCore'
+pod 'IMFData'
