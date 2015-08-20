@@ -29,6 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // initialize SDK with IBM Bluemix application ID and route 
         // replace this line with the code shown in Step 3 of the existing project AMA set up guide
         IMFClient.sharedInstance().initializeWithBackendRoute("Your IBM Bluemix Route", backendGUID: "Your GUID")
+        IMFGoogleAuthenticationHandler.sharedInstance().registerWithDefaultDelegate()
         return true
     }
     func applicationWillResignActive(application: UIApplication) {
@@ -52,6 +53,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+  
+    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject?) -> Bool {
+        //handle the G+ authentication callback.
+        let shouldHandleGoogleURL = GPPURLHandler.handleURL(url, sourceApplication: sourceApplication, annotation: annotation)
+        IMFGoogleAuthenticationHandler.sharedInstance().handleOpenURL(shouldHandleGoogleURL)
+        return shouldHandleGoogleURL
     }
 
 
