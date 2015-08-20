@@ -16,9 +16,21 @@
 import UIKit
 import CloudantToolkit
 
+struct Route {
+    let name : String
+    let crag : String
+    
+    init(revision:CDTDocumentRevision){
+        self.name   = revision.body()["name"] as! String;
+        self.crag   = revision.body()["crag"] as! String;
+        
+    }
+}
+
 class ViewController : UITableViewController {
     
     @IBOutlet weak var spinner: UIActivityIndicatorView!
+    var routes:Dictionary<String,Array<Route>> = Dictionary<String,Array<Route>>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,6 +44,7 @@ class ViewController : UITableViewController {
         
         self.spinner.startAnimating()
         self.spinner.hidden = false
+        NSNotificationCenter.defaultCenter().addObserver(self, selector:Selector("reloadData"), name: "DataSetupComplete", object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -42,11 +55,78 @@ class ViewController : UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 0
+        return self.routes.count
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-       return 0
+        let routesArray = [String](self.routes.keys)
+        let crag = routesArray[section];
+        if let routeByCrag = self.routes[crag] {
+            return routeByCrag.count
+        } else {
+            return 0
+        }
+    }
+    
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        let cell:UITableViewCell = tableView.dequeueReusableCellWithIdentifier("RouteCell", forIndexPath: indexPath)
+        let routesArray = [String](self.routes.keys)
+        let crag = routesArray[indexPath.section];
+        if let routes = self.routes[crag]{
+        
+            let route = routes[indexPath.row]
+            
+            cell.textLabel?.text = route.name
+            cell.detailTextLabel?.text = route.crag
+        }
+        return cell
+    }
+    
+    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        let routesArray = [String](self.routes.keys)
+        return routesArray[section] as String
+    }
+
+    
+    func getStore() -> CDTStore? {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        return appDelegate.store
+    }
+    
+    func reloadData() {
+        let query = CDTCloudantQuery(cloudantQuery: ["documentType":"route"])
+        var model:Dictionary<String,Array<Route>> = Dictionary()
+        
+        if let store = self.getStore() {
+            store.performQuery(query, completionHandler: { (results, error) -> Void in
+                if let _ = error {
+                    NSLog("Error: %@",error)
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        self.spinner.startAnimating()
+                        self.spinner.hidden = true
+                    })
+                }
+                if let _ = results {
+                    for result in results {
+                        let route = Route(revision: result as! CDTDocumentRevision)
+                        if let modelRoute = model[route.crag]{
+                            let newModelRoute = [route] + modelRoute
+                            model[route.crag] = newModelRoute
+                        } else {
+                            model[route.crag] = [route]
+                        }
+                    }
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        self.spinner.startAnimating()
+                        self.spinner.hidden = true
+                        self.routes = model
+                        self.tableView.reloadData()
+                    })
+                }
+            }) //end of block
+
+        }
     }
 
     /*

@@ -30,6 +30,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // replace this line with the code shown in Step 3 of the existing project AMA set up guide
         IMFClient.sharedInstance().initializeWithBackendRoute("Your IBM Bluemix Route", backendGUID: "Your GUID")
         IMFGoogleAuthenticationHandler.sharedInstance().registerWithDefaultDelegate()
+        
+        
+        let manager = IMFDataManager.sharedInstance()
+        let name = "routes";
+        
+        //create the remote store
+        manager.remoteStore(name, completionHandler: { (store, error) -> Void in
+            if let actualError = error {
+                NSLog("Error creating store: %@", actualError)
+            }
+            
+            if let datastore = store {
+                self.store = datastore
+                self.store?.createIndexWithName("documentType", fields: ["documentType"], completionHandler: { (error) -> Void in
+                    if let actualError = error {
+                        NSLog("error occured creating index", actualError)
+                    } else {
+                        
+                        //do some permissions 
+                        manager.setCurrentUserPermissions(DB_ACCESS_GROUP_MEMBERS, forStoreName: name, completionHander: { (success, error) -> Void in
+                            if(success){
+                                NSNotificationCenter.defaultCenter().postNotificationName("DataSetupComplete", object: nil)
+                            } else {
+                                NSLog("Error setting permissions %@",error)
+                            }
+                        })
+                    }
+                    
+                })
+                
+            }
+            
+        })
+        
+        
+        
+        
         return true
     }
     func applicationWillResignActive(application: UIApplication) {
@@ -56,8 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
   
-    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject?) -> Bool {
-        //handle the G+ authentication callback.
+    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject) -> Bool {
         let shouldHandleGoogleURL = GPPURLHandler.handleURL(url, sourceApplication: sourceApplication, annotation: annotation)
         IMFGoogleAuthenticationHandler.sharedInstance().handleOpenURL(shouldHandleGoogleURL)
         return shouldHandleGoogleURL
