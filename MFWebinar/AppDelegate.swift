@@ -26,7 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        // initialize SDK with IBM Bluemix application ID and route
+        // initialize SDK with IBM Bluemix application ID and route 
+        // replace this line with the code shown in Step 3 of the existing project AMA set up guide
+        IMFClient.sharedInstance().initializeWithBackendRoute("Your IBM Bluemix Route", backendGUID: "Your GUID")
         return true
     }
     func applicationWillResignActive(application: UIApplication) {
@@ -52,9 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-    
+
 
 
 
 }
-
