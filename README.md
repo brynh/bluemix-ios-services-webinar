@@ -1,7 +1,7 @@
 MFWebinar
 ====
 
-This is the source code for the app presented as part of the webinar "[Developeing
+This is the source code for the app presented as part of the webinar "[Developing
 iOS apps with MobileFirst Services and Cloudant on IBM Bluemix](https://cloudant.com/resources/webinars/developing-ios-apps-with-mobilefirst-services-and-cloudant-on-ibm-bluemix/)".
 
 
